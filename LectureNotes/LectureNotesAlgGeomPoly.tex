@@ -1,0 +1,228 @@
+\documentclass[11pt]{report}
+\usepackage[a4paper,left=2.5cm,right=1.5cm,top=3cm,bottom=2cm]{geometry}
+%\usepackage{t1enc,times,amsmath}
+\usepackage{t1enc,times,amsmath,amsthm,amssymb} %,amsfonts}
+\usepackage{hyperref}
+\usepackage{graphicx}
+%\usepackage[english]{babel}
+%\usepackage[T1]{fontenc}
+%\selectlanguage{english}
+%\usepackage[swedish]{babel}
+%\selectlanguage{swedish}
+
+% For harvard style author year references.
+%\usepackage{natbib}
+
+\newcommand{\sinc}{\operatorname{sinc}}
+\newcommand{\sz}{Szelisky}
+\newcommand{\fl}{Finn Lindgren}
+\newcommand{\fatR}{\mathbb{R}}
+\newcommand{\fatC}{\mathbb{C}}
+\newcommand{\fatZ}{\mathbb{Z}}
+\newcommand{\fatN}{\mathbb{N}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\KA}{K\AA}
+\newcommand{\ie}{i.e.\ }
+\newcommand{\eg}{e.g.\ }
+\newcommand{\vc}[1]{{\bar{\mathbf{#1}}}}
+\newcommand{\spc}{{\quad}}
+
+\newcommand{\realR}{\mathbb{R}}
+\newcommand{\complexC}{\mathbb{C}}
+
+
+\newcommand{\bx}{{\bf x}}
+\newcommand{\by}{{\bf y}}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{problem}{Problem}[section]
+\newtheorem{conjecture}{Conjecture}[section]
+% \newcommand{\refname}{\large References}
+%\renewcommand{\qedsymbol}{\hfill \rule{2mm}{2mm}}
+%\newcommand{\qedsymbol}{\hfill \rule{2mm}{2mm}}
+%{\theoremstyle{definition}\newtheorem{definition}{Definition}[section]}
+%{\theoremstyle{definition}\newtheorem{example}{Example}[section]}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{proposition}{Proposition}[theorem]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newenvironment{remark}{\noindent {\bf Remark.}\/}{\hfill \rule{2mm}{2mm}}
+\newtheorem{formulation}{Formulation}
+\newtheorem{algoritm}{Algorithm}[section]
+
+\begin{document}
+\centerline{{\huge \bf Lecture Notes for Algebraic Geometry and }}
+\centerline{{\huge \bf Solving Systems of Polynomial Systems, 2018}}
+\vspace{5mm}
+\parindent 0pt
+
+This document contains study notes for the course in 
+Algebraic Geometry and Solving Systems of Polynomial Systems given at Lund University, 2018.
+The notes are still work in progress, so read with caution. Errors and suggestions of improving the notes
+are much appreciated. Just send me an e-mail and I'll try to fix it. 
+
+
+%\cite{ahrnbom-jensen-etal-iccvw-17}
+
+All material is posted on the course homepage: \\
+\href{http://www.ctr.maths.lu.se/course/AlgGeomPoly/2018/}{http://www.ctr.maths.lu.se/course/AlgGeomPoly/2018/} \\
+
+In the course we will study the theory of algebraic geometry and apply the theory to solving systems of polynomial equations.
+
+For the course we have used several textbooks, \eg 
+
+
+{\bf Ideals, Variations and Algorithms} by D. Cox, J. Little, D. O'Shea, Springer. The scope of the course is Chapters 1-4, and parts of Chapters 5 and 8.
+
+{\bf Using Algebraic Geometry} by D. Cox, J. Little, D. O'Shea, Springer. The scope of the course is Chapter 2, as well as parts of Chapters 3 and 7. \\
+
+
+{\bf Scientific articles}, e.g.\\
+
+Larsson, V., Åström, K., \& Oskarsson, M. (2017). 
+\href{http://openaccess.thecvf.com/content_ICCV_2017/papers/Larsson_Polynomial_Solvers_for_ICCV_2017_paper.pdf}{\bf Polynomial Solvers for Saturated Ideals}
+In The IEEE International Conference on Computer Vision (ICCV) IEEE--Institute of Electrical and Electronics Engineers Inc.. 
+
+Larsson, V., Åström, K., \& Oskarsson, M. (2017). 
+\href{http://openaccess.thecvf.com/content_cvpr_2017/papers/Larsson_Efficient_Solvers_for_CVPR_2017_paper.pdf}{\bf Efficient Solvers for Minimal Problems by Syzygy-based Reduction}
+In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2017 
+
+Larsson, V., \& Åström, K. (2016). 
+\href{http://www.maths.lth.se/matematiklth/personal/viktorl/papers/larsson2016uncovering.pdf}{\bf Uncovering symmetries in polynomial systems}.
+In B. Leibe, J. Matas, N. Sebe, \& M. Welling (Eds.), Computer Vision - ECCV 2016 14th European Conference, Amsterdam, The Netherlands, October 11-14, 2016, Proceedings, Part III (pp. 252-267). (Lecture Notes in Computer Science (LNCS); Vol. 9907). Springer Verlag. 
+
+
+
+\chapter{Examples of systems of polynomial equations}
+
+\section{Introduction}
+
+\section{Converting a geometric problem to systems of polynomial equations}
+
+Converting a geometric problem to systems of polynomial equations.
+
+
+\begin{example}[Find a line that goes through one point]
+Consider a point $(x,y)$ in a plane. what lines pass through this point. What lines goes through this point. Write this as a system of polynomial equations. What is the solution set, the variety? {\bf later:} What is the degree of variety? What is the dimension of the variety?
+\end{example}
+
+\begin{example}[Find a line that goes through two points]
+Consider two point $(x_1,y_1), (x_2,y_2)$ in a plane. What lines pass through these two point? Write this as a system of polynomial equations. What is the solution set, the variety in the general case? Are there critical/exceptional data $(x_1,y_1), (x_2,y_2)$ so that this variety becomes larger? {\bf later:} What is the degree of variety? What is the dimension of the variety?
+\end{example}
+
+\begin{example}[Find a line that goes through two points]
+Consider two point $(x_1,y_1), (x_2,y_2), (x_3,y_3)$ in a plane. What lines pass through these two point? Write this as a system of polynomial equations. What is the solution set, the variety in the general case? Are there critical/exceptional data $(x_1,y_1), (x_2,y_2), (x_3,y_3)$ so that this variety becomes larger? {\bf later:} What is the degree of variety? What is the dimension of the variety?
+\end{example}
+
+\begin{example}[Linear algebra]
+Consider a matrix  
+$$
+A = \begin{pmatrix} a_1 & a_2 & a_3 \\
+a_4 & 0 & 0 \\
+a_5 & 0 & 0 \end{pmatrix}$$
+and a vector
+$$
+b = \begin{pmatrix} b_1 \\ b_2 \\ b_3 \end{pmatrix}$$
+The linear system of equations $Ax = b$ defines a variety? Is this problem typically overdetermined, underdetermined or well-determined? Could it be said to be both under and overdetermined?
+\end{example}
+
+\begin{example}[Determining the homography from four points]
+Consider four points in one image $(x_1,y_1), (x_2,y_2), (x_3,y_3), (x_4,y_4)$ and
+four points in another images $(u_1,v_1), (u_2,v_2), (u_3,v_3), (u_4,v_4)$. Determine the  $3\times 3$ matrix $H$ representing the homography, such that
+$$ \lambda_i \begin{pmatrix} u_i \\ v_i \\ 1 \end{pmatrix} = H \begin{pmatrix} x_i \\ y_i \\ 1 \end{pmatrix} \forall i 
+$$
+What is the variety in this case? Dimension? Degree? Well-determined?
+\end{example}
+
+\begin{example}[Determining the homography from three points and one line]
+Consider four points in one image $(x_1,y_1), (x_2,y_2), (x_3,y_3), (x_4,y_4)$ and
+four points in another images $(u_1,v_1), (u_2,v_2), (u_3,v_3), (u_4,v_4)$. Determine the  $3\times 3$ matrix $H$ representing the homography, such that
+$$ \lambda_i \begin{pmatrix} u_i \\ v_i \\ 1 \end{pmatrix} = H \begin{pmatrix} x_i \\ y_i \\ 1 \end{pmatrix} \forall i 
+$$
+What is the variety in this case? Dimension? Degree? Well-determined?
+\end{example}
+
+\begin{example}[Determining the homography from two points and two lines]
+Consider four points in one image $(x_1,y_1), (x_2,y_2), (x_3,y_3), (x_4,y_4)$ and
+four points in another images $(u_1,v_1), (u_2,v_2), (u_3,v_3), (u_4,v_4)$. Determine the  $3\times 3$ matrix $H$ representing the homography, such that
+$$ \lambda_i \begin{pmatrix} u_i \\ v_i \\ 1 \end{pmatrix} = H \begin{pmatrix} x_i \\ y_i \\ 1 \end{pmatrix} \forall i 
+$$
+What is the variety in this case? Dimension? Degree? Well-determined?
+\end{example}
+
+
+\begin{example}[Uncalibrated relative pose for two views of seven points]
+\end{example}
+
+\begin{example}[Calibrated relative pose for two views of five points]
+\end{example}
+
+\begin{example}[Uncalibrated relative pose for three views of nine lines]
+\end{example}
+
+\begin{example}[Time-of-Arrival node calibration in 2D using 3+3 points]
+\end{example}
+
+\begin{example}[Time-of-Arrival node calibration in 2D using 4+6 points]
+\end{example}
+
+\begin{example}[The bathing ball problem]
+\end{example}
+
+\chapter{Lecture 10: Fitting, Parameter Estimation}
+
+\section{Examples}
+There are many situations in image analysis and computer vision, when the problem of understanding, segmenting or interpreting an image, can be phrased as a problem of estimating parameters to a model. Here are a few examples
+
+\begin{example}[Line detection]
+In an image a number of edge points have beed detected using an edge detector. Some of these lie on a line. Find the points that lie on the line and find the parameters of the line. 
+\end{example}
+
+\begin{example}[Circle detection]
+In an image a number of edge points have beed detected using an edge detector. Some of these lie on a circle. Find the points that lie on the circle and find the parameters of the circle. 
+\end{example}
+
+\begin{example}[Epipolar geometry]
+In the computer vision guest lecture we will talk about the problem of estimating the relative motion of the camera between two views. 
+In two view a number of feature points have beed detected using an interest point detector, e.g.\ SIFT or Harris detector and then matched. Some of these matches fulfill the so called epipolar constraint. Find the point correspondences that actually do match and determine the fundamental matrix. 
+\end{example}
+
+
+In the lecture we use the problem of fitting a line to a set of points as a model problem. The problem is useful, since it is sufficiently complex to capture the main difficulties of many fitting problems, yet simple enough to make the different steps relatively straightforward. 
+
+For line fitting it is common that we assume that a number of measurements of line points (or more generally tokens) are given and that we try to estimate model that fits with these tokens
+
+\begin{table}
+\begin{center}
+\begin{tabular}{llll}
+Case & Token & Model & Constraint \\
+\hline
+Line  & Edge points $x_i,y_i$ & line parameters $(a,b,c)$ & $ax_i+by_i+c=0$ \\
+Circle  & Edge points $x_i,y_i$ & circle parameters $(r,u,v)$ & $(x_i-u)^2+(y_i-v)^2=r^2$ \\
+Fundamental matrix  & Point correspondences $x_i,y_i, u_i, v_i$ & Fundamental matrix $F$ & $\begin{pmatrix} x_i & y_i & 1 \end{pmatrix} F \begin{pmatrix} u_i & v_i & 1 \end{pmatrix}^T = 0$ \\
+\end{tabular}
+\end{center}
+\caption{A few model fitting cases with corresponding tokens, models and constraints}
+\end{table}
+
+There are (at least) three levels of difficulties to the problem. 
+
+\begin{enumerate}
+\item {\bf Parameter Estimation} Assume that we have measurements and know which measurements belong to which objects. How should the parameters of the model be estimated?
+\item {\bf Data Association} Assume that we know how many structures are present, and we wish to determine which tokens came from which structure.
+For example, we might have a set of edge points, and we need to know the best set of lines fitting these points; this involves (1) determining which points belong together on a line and (2) figuring out what each line is.
+Generally, these problems are not independent (because one good way of knowing whether points belong together on a line is checking how well the best fitting line approximates them). 
+\item {\bf Model Selection} We would like to know (1) how many structures are present (2) which points are associated with which structure and (3) what the structures are.
+For example, given a set of edge points, we might want to return a set of lines that fits them well.
+This is, in general, a substantially more difficult problem. The answer depends on the type of model adopted, for example, we could simply pass a line through every pair of edge points ? this gives a set of lines that fit extremely well, but will likely be a poor representation.
+\end{enumerate}
+
+\section{Random Sampling and Consensus}
+
+%\bibliographystyle{agsm}
+\bibliographystyle{plain}
+\bibliography{AlgGeomPolyRefs.bib}
+
+\end{document}
