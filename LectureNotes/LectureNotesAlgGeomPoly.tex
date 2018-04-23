@@ -14,6 +14,7 @@
 %\usepackage{natbib}
 
 \newcommand{\sinc}{\operatorname{sinc}}
+\newcommand{\tr}{\operatorname{tr}}
 \newcommand{\sz}{Szelisky}
 \newcommand{\fl}{Finn Lindgren}
 \newcommand{\fatR}{\mathbb{R}}
@@ -26,13 +27,13 @@
 \newcommand{\eg}{e.g.\ }
 \newcommand{\vc}[1]{{\bar{\mathbf{#1}}}}
 \newcommand{\spc}{{\quad}}
-
 \newcommand{\realR}{\mathbb{R}}
 \newcommand{\complexC}{\mathbb{C}}
-
-
 \newcommand{\bx}{{\bf x}}
 \newcommand{\by}{{\bf y}}
+\providecommand{\norm}[1]{\lVert#1\rVert}
+\newcommand{\rrr}{\mathbf{r}}
+\newcommand{\sss}{\mathbf{s}}
 
 
 \newtheorem{theorem}{Theorem}[section]
@@ -79,7 +80,7 @@ For the course we have used several textbooks, \eg
 {\bf Using Algebraic Geometry} by D. Cox, J. Little, D. O'Shea, Springer. The scope of the course is Chapter 2, as well as parts of Chapters 3 and 7. \\
 
 
-{\bf Scientific articles}, e.g.\\
+{\bf Scientific papers}, e.g.\\
 
 Larsson, V., Åström, K., \& Oskarsson, M. (2017). 
 \href{http://openaccess.thecvf.com/content_ICCV_2017/papers/Larsson_Polynomial_Solvers_for_ICCV_2017_paper.pdf}{\bf Polynomial Solvers for Saturated Ideals}
@@ -150,24 +151,310 @@ $$
 What is the variety in this case? Dimension? Degree? Well-determined?
 \end{example}
 
+\section{Suggested project problems}
+
 
 \begin{example}[Uncalibrated relative pose for two views of seven points]
+Consider seven points in one image $(x_1,y_1), (x_2,y_2), \ldots, (x_7,y_7)$ and
+four points in another images $(u_1,v_1), (u_2,v_2), \ldots (u_7,v_7)$. Determine the  $3\times 3$ matrix $F$ representing the fundamental matrix, such that
+$$ \lambda_i \begin{pmatrix} x_i \\ y_i \\ 1 \end{pmatrix}^T F \begin{pmatrix} u_i \\ v_i \\ 1 \end{pmatrix} = 0, \quad \forall i 
+$$
+and such that $$ \det(F) = 0 . $$
 \end{example}
 
 \begin{example}[Calibrated relative pose for two views of five points]
+Consider five points in one image $(x_1,y_1), (x_2,y_2), \ldots, (x_5,y_5)$ and
+four points in another images $(u_1,v_1), (u_2,v_2), \ldots (u_5,v_5)$. Determine the  $3\times 3$ matrix $E$ representing the essential matrix, such that
+$$ \lambda_i \begin{pmatrix} x_i \\ y_i \\ 1 \end{pmatrix}^T F \begin{pmatrix} u_i \\ v_i \\ 1 \end{pmatrix} = 0, \quad \forall i 
+$$
+and such that $$ \det(F) = 0$$
+and
+$$ 2 E E^T E - \tr (EE^T) E = 0 . $$
+\end{example}
+
+\begin{example}[Planar trilateration]
+Time-of-Arrival measurements gives (after multiplication with the speed of sound or speed of light) distance measurements. 
+Assume that there are a set of $m=2$ anchors $\mathbf{r}_i$, $ i = 1, \dots, m$, with $\mathbf{r}_i \in \fatR^2$.
+Assume that time-of-arrival measurements provide distance measurements
+	\begin{equation}
+		d_{i} = {\norm{\mathbf{r}_i - \mathbf{s}}}_2, 
+	\end{equation}
+from an unknown position $\mathbf{s} \in \fatR^2$. Write a minimal solver that given the two anchor positions $\mathbf{r}_1$ and $\mathbf{r}_2$ and given the two distance measurements $d_1$ and $d_2$ calculates all solutions $\mathbf{s}$ so that
+$$
+\begin{cases}
+d_{1} = {\norm{\mathbf{r}_1 - \mathbf{s}}}_2, \\
+d_{2} = {\norm{\mathbf{r}_2 - \mathbf{s}}}_2, 
+\end{cases}
+$$
+\end{example}
+
+\begin{example}[Converting to an eigenvalue problem]
 \end{example}
 
 \begin{example}[Uncalibrated relative pose for three views of nine lines]
 \end{example}
 
 \begin{example}[Time-of-Arrival node calibration in 2D using 3+3 points]
+Time-of-Arrival measurements gives (after multiplication with the speed of sound or speed of light) distance measurements. 
+Assume that there are a set of $m=3$ anchors $\mathbf{r}_i$, $ i = 1, \dots, m$, with $\mathbf{r}_i \in \fatR^2$.
+Assume that time-of-arrival measurements provide distance measurements
+	\begin{equation}
+		d_{ij} = {\norm{\mathbf{r}_i - \mathbf{s}_j}}_2, % + \epsilon_{ij}, 
+		\label{eq:distance}
+	\end{equation}
+from $n=3$ unknown positions $\mathbf{s}_j$, $ j = 1, \dots, n$, with $\mathbf{s}_j \in \fatR^2$.
+
+Write a minimal solver that given $9$ distance measurements $d_{ij}, i = 1, \dots, m, j = 1, \dots, n$ calculates all solutions 
+$(\mathbf{r}_1, \mathbf{r}_2, \mathbf{r}_3, \mathbf{s}_1, \mathbf{s}_2, \mathbf{s}_3)$ so that
+$$
+d_{ij} = {\norm{\mathbf{r}_i - \mathbf{s}_j}}_2,    i = 1, \dots, m, j = 1, \dots, n .
+$$
+Is there enough information to solve this problem? How many solutions are there?
 \end{example}
 
-\begin{example}[Time-of-Arrival node calibration in 2D using 4+6 points]
+\begin{example}[Time-of-Arrival node calibration in 3D using 4+6 points]
+Time-of-Arrival measurements gives (after multiplication with the speed of sound or speed of light) distance measurements. 
+Assume that there are a set of $m=4$ anchors $\mathbf{r}_i$, $ i = 1, \dots, m$, with $\mathbf{r}_i \in \fatR^3$.
+Assume that time-of-arrival measurements provide distance measurements
+	\begin{equation}
+		d_{ij} = {\norm{\mathbf{r}_i - \mathbf{s}_j}}_2, % + \epsilon_{ij}, 
+		\label{eq:distance}
+	\end{equation}
+from $n=6$ unknown positions $\mathbf{s}_j$, $ j = 1, \dots, n$, with $\mathbf{s}_j \in \fatR^2$.
+
+Write a minimal solver that given $24$ distance measurements $d_{ij}, i = 1, \dots, m, j = 1, \dots, n$ calculates all solutions 
+$(\mathbf{r}_1, \ldots, \mathbf{r}_4, \mathbf{s}_1, \ldots, \mathbf{s}_6)$ so that
+$$
+d_{ij} = {\norm{\mathbf{r}_i - \mathbf{s}_j}}_2,    i = 1, \dots, m, j = 1, \dots, n .
+$$
+Is there enough information to solve this problem? How many solutions are there?
 \end{example}
+
+\section{Open Research Questions}
 
 \begin{example}[The bathing ball problem]
 \end{example}
+
+
+\chapter{Using Eigenvalue Decomposition for polynomial solving}
+
+How are roots calculated in matlab? 
+
+Read \url{https://se.mathworks.com/help/matlab/ref/roots.html} \, .
+
+Consider the polynomial equation 
+$$ p(x) = x^3 - 7 x^2 + 14 x - 8 = 0$$
+Clearly every solution $x$ to the equation, also fulfills
+$$ \begin{cases}
+x^3 &=  7 x^2 - 14 x + 8 \\
+x^2 &= x^2 \\
+x & =x\\
+\end{cases}.$$
+Rewrite this as a matrix equation
+$$
+x 
+\begin{pmatrix}
+x^2\\
+x\\
+1\\
+\end{pmatrix}
+=
+\underbrace{\begin{pmatrix}
+m_{11} & m_{12} & m_{13} \\
+m_{21} & m_{22} & m_{23} \\
+m_{31} & m_{32} & m_{33} \\
+\end{pmatrix}}_{{\bf M}}
+\begin{pmatrix}
+x^2\\
+x\\
+1\\
+\end{pmatrix}
+$$
+for some matrix ${\bf M}$. What is the matrix ${\bf M}$?
+
+In the reference page for \verb#roots# in matlab, it is written 'The algorithm simply involves computing the eigenvalues of the companion matrix:'
+\begin{verbatim}
+A = diag(ones(n-1,1),-1);
+A(1,:) = -c(2:n+1)./c(1);
+eig(A)
+\end{verbatim}
+Explain what $c$ is and why the algorithm works
+
+Try 
+\begin{verbatim}
+c = [1 -7 14 -8];
+n = 3;
+A = diag(ones(n-1,1),-1);
+A(1,:) = -c(2:n+1)./c(1);
+[v,d] = eig(A)
+\end{verbatim}
+Study $v$ and $d$. Explain what they should contain? How can one find the solutions from $d$? How can one find the solutions from $v$? Why is the last row of $v$ not all equal to one? Interpretation?
+
+\begin{example}[Planar trilateration]
+Time-of-Arrival measurements gives (after multiplication with the speed of sound or speed of light) distance measurements. 
+Assume that there are a set of $m=2$ anchors $\mathbf{r}_i$, $ i = 1, \dots, m$, with $\mathbf{r}_i \in \fatR^2$.
+Assume that time-of-arrival measurements provide distance measurements
+	\begin{equation}
+		d_{i} = {\norm{\mathbf{r}_i - \mathbf{s}}}_2, 
+	\end{equation}
+from an unknown position $\mathbf{s} \in \fatR^2$. Write a minimal solver that given the two anchor positions $\mathbf{r}_1$ and $\mathbf{r}_2$ and given the two distance measurements $d_1$ and $d_2$ calculates all solutions $\mathbf{s}$ so that
+$$
+\begin{cases}
+d_{1} = {\norm{\mathbf{r}_1 - \mathbf{s}}}_2, \\
+d_{2} = {\norm{\mathbf{r}_2 - \mathbf{s}}}_2, 
+\end{cases}
+$$
+\end{example}
+
+\begin{example}[Converting to an eigenvalue problem]
+Here we will show how to convert the planar trilateration problem to an eigenvalue problem. This is not the most efficient way to solve this particular problem. However, it is a useful example to illustrate that a system polynomial equation can be solved in a similar technique as for \verb#roots#, i.e.\
+\begin{itemize}
+\item Mulitply the original equations with a number of monomials.
+\item Express the system of equations as $Cm=0$, where $C$ is a matrix of coefficients and $m$ is a vector of monomials. 
+\item Use numerical linear algebra to simplify the equations.
+\item Rearrange the equations to form an eigenvalue problem $ \lambda {\bf v} = M {\bf v}$. 
+\item Calculate eigenvalues and eigenvectors.
+\item Extract the solutions from the eigenvalues/eigenvectors. 
+\end{itemize}
+
+Read through the example and make sure you understand the different steps. What is similar to roots? Are there any differences?
+
+Assume that the measurements are 
+$$
+\mathbf{r}_1 = 
+\begin{pmatrix}
+1 \\
+2 
+\end{pmatrix} , 
+\mathbf{r}_2 = 
+\begin{pmatrix}
+3 \\
+4 
+\end{pmatrix}, d_1 = 3, d_2 = 3 .
+$$
+
+Parametrize the unknown vector as 
+$$ \mathbf{s} = 
+\begin{pmatrix}
+x \\
+y 
+\end{pmatrix} .
+$$
+By squaring the measurements equations we get two polynomial equations in two unknowns. 
+$$
+\begin{cases}
+x^2 - 2 x + y^2 - 4 y - 4 = 0 \\
+x^2 - 6 x + y^2 - 8 y + 16 = 0 \\
+\end{cases}.
+$$
+Multiplying the first equation with $1$, $x$ and $y$ and similarily for the second equation gives
+$$\begin{cases}
+x^2 - 2x + y^2 - 4y - 4 = 0 \\
+x^3 - 2x^2 + xy^2 - 4xy -4 x = 0 \\
+x^2y - 2xy + y^3 - 4y^2 -4y = 0 \\
+x^2 - 6x + y^2 - 8y + 16 = 0 \\
+x^3 - 6x^2 + xy^2 - 8xy + 16x = 0 \\
+x^2y - 6xy + y^3 - 8y^2 + 16y = 0 \\
+\end{cases}.
+$$
+This can be written as 
+$$ C m = \underbrace{\begin{pmatrix}
+0 & 0 & 0 & 0 & 1 & 0 & 1 & -2 & -4 & -4 \\
+1 & 0 & 1 & 0 & -2 & -4 & 0 & -4 & 0 & 0 \\
+0 & 1 & 0 & 1 & 0 & -2 & -4 & 0 & -4 & 0 \\
+0 & 0 & 0 & 0 & 1 & 0 & 1 & -6 & -8 & 16 \\
+1 & 0 & 1 & 0 & -6 & -8 & 0 & 16 & 0 & 0 \\
+0 & 1 & 0 & 1 & 0 & -6 & -8 & 0 & 16 & 0 \\
+\end{pmatrix}}_{C} 
+\underbrace{\begin{pmatrix}
+x^3 \\
+x^2y \\
+xy^2 \\
+y^3 \\
+x^2 \\
+xy \\
+y^2 \\
+x \\
+y \\
+1 \\
+\end{pmatrix}}_{m} 
+= 0$$
+
+Gaussian Elimination gives six equations 
+$$
+\begin{pmatrix}
+1 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 16 & -81 \\
+0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & -26 & 11 \\
+0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 4 & -20 \\
+0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 1 & -5.5 \\
+0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & -6 & 5.5 \\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 1 & -5 \\
+\end{pmatrix}
+\underbrace{\begin{pmatrix}
+x^3 \\
+x^2y \\
+xy^2 \\
+y^3 \\
+x^2 \\
+xy \\
+y^2 \\
+x \\
+y \\
+1 \\
+\end{pmatrix}}_{m} 
+= 0 . $$
+Two of these size equations are
+$$\begin{cases}
+xy + y -5.5 = 0 \\
+x + y -5 = 0\\
+\end{cases}.
+$$
+Rewriting these as
+$$\begin{cases}
+xy =  -y +5.5 \\
+x =  -y +5 \\
+\end{cases}.
+$$
+gives the following eigenvalue problem
+$$
+\begin{pmatrix}
+xy\\
+x\\
+\end{pmatrix}
+=
+x 
+\begin{pmatrix}
+y\\
+1\\
+\end{pmatrix}
+=
+\underbrace{\begin{pmatrix}
+-1 & 5.5\\
+-1 & 5\\
+\end{pmatrix}}_{{\bf M}}
+\begin{pmatrix}
+y\\
+1\\
+\end{pmatrix} .
+$$
+The first eigenvector-eigenvalue pair is 
+$\lambda_1 = 0.13$ and $v_1 = \begin{pmatrix} 4.87 \\ 1 \end{pmatrix}$. Thus 
+$$\mathbf{s} = \begin{pmatrix} 
+0.13\\
+4.87
+\end{pmatrix}
+$$
+is one solution to the problem.
+The second eigenvector-eigenvalue pair is 
+$\lambda_2 = 3.87$ and $v_2 = \begin{pmatrix} 1.13 \\ 1 \end{pmatrix}$. Thus 
+$$\mathbf{s} = \begin{pmatrix} 
+3.87\\
+1.13
+\end{pmatrix}
+$$
+is one solution to the problem.
+\end{example}
+
 
 \chapter{Lecture 10: Fitting, Parameter Estimation}
 
