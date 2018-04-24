@@ -230,6 +230,25 @@ $$
 Is there enough information to solve this problem? How many solutions are there?
 \end{example}
 
+\begin{example}[Restricted homographies]
+Robot moving in a plane. Unknown orientation with tilt parameters $\psi,\phi$. These are fixed over time. The motion is given by translation $(t_x,t_y)$ and orientation $\theta$. The homography depends on on these five parameters $z = (t_x,t_y,\theta, \psi, \phi)$. $z_0$.
+Parametrized homographies $H(z)$. Use elimination to obtain constraints on $H$, e.g.\ $f(H)=0$. The system of polynomial equations
+
+Consider four points in one image $(x_1,y_1), (x_2,y_2), (x_3,y_3), (x_4,y_4)$ and
+four points in another images $(u_1,v_1), (u_2,v_2), (u_3,v_3), (u_4,v_4)$. Determine the  $3\times 3$ matrix $H$ representing the homography, such that
+$$ \lambda_i \begin{pmatrix} u_i \\ v_i \\ 1 \end{pmatrix} = H \begin{pmatrix} x_i \\ y_i \\ 1 \end{pmatrix} \forall i 
+$$
+and such that
+$f(H)=0$.
+What is the variety in this case? Dimension? Degree? Well-determined?
+\end{example}
+
+\begin{example}[Optimal trilateration]
+Overdetermined problem. More equations than unknowns. Phraze as an optimization problem. Get this problem to be polynomial. 
+
+\end{example}
+
+
 \section{Open Research Questions}
 
 \begin{example}[The bathing ball problem]
