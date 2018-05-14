@@ -1,6 +1,9 @@
 \documentclass[11pt]{report}
 \usepackage[a4paper,left=2.5cm,right=1.5cm,top=3cm,bottom=2cm]{geometry}
 %\usepackage{t1enc,times,amsmath}
+\usepackage{tikz}
+\usetikzlibrary{3d}
+\usepackage{pgfplots}
 \usepackage{t1enc,times,amsmath,amsthm,amssymb} %,amsfonts}
 \usepackage{hyperref}
 \usepackage{graphicx}
@@ -34,24 +37,50 @@
 \providecommand{\norm}[1]{\lVert#1\rVert}
 \newcommand{\rrr}{\mathbf{r}}
 \newcommand{\sss}{\mathbf{s}}
+\newcommand{\field}{\mathbb{K}}
+\newcommand{\complex}{\mathbb{C}}
+\newcommand{\integers}{\mathbb{Z}}
+\newcommand{\sumt}{{\textstyle\sum}}
+\def\groebner{Gr\"obner\ }
+\newcommand{\var}{\mathcal{V}}
+\newcommand{\equivc}[1]{\left[ #1 \right]}
+\newcommand{\bmat}[1]{\begin{bmatrix} #1 \end{bmatrix}}
+\newcommand{\pmat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
+\newcommand{\sat}{\operatorname{Sat}}
+\newcommand{\fs}{f_s}
+\newcommand{\bb}{b}
+\newcommand{\ns}{{d}}
+\newcommand{\vspan}{\operatorname{span}}
+\newcommand{\image}{\operatorname{Im}}
+\newcommand{\defeq}{\mathrel{\mathop:}=}
+\newtheorem{thm}{Theorem}
+
+\newcommand\restr[2]{{% we make the whole thing an ordinary symbol
+  \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+  #1 % the function
+  \vphantom{\big|} % pretend it's a little taller at normal size
+  \right|_{#2} % this is the delimiter
+  }}
 
 
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{problem}{Problem}[section]
-\newtheorem{conjecture}{Conjecture}[section]
+
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{problem}{Problem}[chapter]
+\newtheorem{conjecture}{Conjecture}[chapter]
 % \newcommand{\refname}{\large References}
 %\renewcommand{\qedsymbol}{\hfill \rule{2mm}{2mm}}
 %\newcommand{\qedsymbol}{\hfill \rule{2mm}{2mm}}
 %{\theoremstyle{definition}\newtheorem{definition}{Definition}[section]}
 %{\theoremstyle{definition}\newtheorem{example}{Example}[section]}
-\newtheorem{definition}{Definition}[section]
-\newtheorem{example}{Example}[section]
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{example}{Example}[chapter]
 \newtheorem{proposition}{Proposition}[theorem]
-\newtheorem{lemma}{Lemma}[section]
-\newtheorem{corollary}{Corollary}[section]
+\newtheorem{lemma}{Lemma}[chapter]
+\newtheorem{corollary}{Corollary}[chapter]
 \newenvironment{remark}{\noindent {\bf Remark.}\/}{\hfill \rule{2mm}{2mm}}
 \newtheorem{formulation}{Formulation}
-\newtheorem{algoritm}{Algorithm}[section]
+\newtheorem{algoritm}{Algorithm}[chapter]
+\newtheorem{prop}{Proposition}
 
 \begin{document}
 \centerline{{\huge \bf Lecture Notes for Algebraic Geometry and }}
@@ -257,7 +286,19 @@ Overdetermined problem. More equations than unknowns. Phraze as an optimization 
 
 \chapter{Using Eigenvalue Decomposition for polynomial solving}
 
-How are roots calculated in matlab? 
+In this chapter we will study how to convert a system of polynomial equations into an eigenvalue problem and
+see how this can be automated. We will first warm-up by
+\begin{itemize}
+\item See how this can be done for a univariate problem
+\item See how this could in principle be done using polynomial division w r t a Gr{\"o}bner basis.
+\item See how this might be done using numerical linear algebra for a simple example.
+\end{itemize}
+
+Then we will proceed describe how this process can be automated. 
+
+\section{Univariate polynomials}
+
+How are roots calculated for an univariate polynomial in matlab? 
 
 Read \url{https://se.mathworks.com/help/matlab/ref/roots.html} \, .
 
@@ -269,7 +310,7 @@ x^3 &=  7 x^2 - 14 x + 8 \\
 x^2 &= x^2 \\
 x & =x\\
 \end{cases}.$$
-Rewrite this as a matrix equation
+Rewrite this as a matrix equation (an eigenvalue equation)
 $$
 x 
 \begin{pmatrix}
@@ -309,7 +350,92 @@ A(1,:) = -c(2:n+1)./c(1);
 \end{verbatim}
 Study $v$ and $d$. Explain what they should contain? How can one find the solutions from $d$? How can one find the solutions from $v$? Why is the last row of $v$ not all equal to one? Interpretation?
 
-\begin{example}[Planar trilateration]
+
+\section{Calculate action matrix using polynomial division and gröbner basis}
+
+Let $X = (x_1,\dots,x_n)$ be a number of variables, and $\field$ be some field. Then the set of all multivariate polynomials  (with $n$ variables) over $\field$ is denoted $\field[X]$, and this set with their natural operations forms a ring. In this paper we will only consider the case when $\field = \complex$ or $\field = \integers_p$ for some prime number $p$.  For any polynomial system
+\begin{equation}
+	\begin{cases}
+		f_1(\vec{x}) = 0 \\
+		f_2(\vec{x}) = 0 \\
+		\quad \vdots \\
+		f_m(\vec{x}) = 0
+	\end{cases},
+\end{equation}
+ %$F = \{ f_i(\vec{x}) = 0\}_{i=1}^m$
+ there is a corresponding \textit{ideal},
+\begin{equation}
+	I = \langle f_1,\dots,f_m\rangle = \{ \sumt_i h_i f_i ~|~ h_i \in \field[X] \}
+\end{equation}
+Closely connected is the set of shared zeros,
+\begin{equation}
+	V(I) = \{ \vec{x} \in \field^n ~|~f(\vec{x})=0,~\forall f\in I\},
+\end{equation}
+called an \textit{affine variety}.   When it is clear from the context which polynomials are meant we will simply write $V$ and $I$. 
+
+Similar to the univariate case there exists a division algorithm for multivariate polynomials. Unfortunately the remainder depends on the order in which the polynomials are listed. Fortunately for any ideal $I$ there exist special sets of generators $G = \{g_i\}_{i=0}^\ell$ called \textit{\groebner bases}, such that the remainder after division with $G$ is uniquely defined, regardless of how the individual $g_i$ are listed. This allows us to define the \textit{normal form}  of a polynomial $p \in\field[X]$ with respect to $G$ as the unique remainder after division with $G$. This is denoted $\overline{p}^G$. Note that $p \in I$ if and only if $\overline{p}^G = 0$. For a \groebner basis $G$ the \textit{standard monomials} is the set of all monomials not divisible by any element in $G$. It is easy to see that the normal form for any polynomial lies in the linear span of the standard monomials.
+
+Another object of interest is the \textit{quotient ring} $\field[X]/I$, consisting of the equivalence classes over $I$, \ie
+\begin{equation}
+	\quad [p] = [q] \iff p-q \in I.
+\end{equation}
+This also means that $p(\vec{x}) = q(\vec{x})$ for all $\vec{x} \in V(I)$.
+If an affine variety $\var$ is zero dimensional (\ie there are finitely many solutions) then the corresponding quotient space $\field[X]/I$ will be a finite dimensional vector space. For any \groebner basis $G$ of $I$ we have that the normal set forms a vector space basis of the quotient space $\field[X]/I$.
+
+Next we give a brief overview of the action matrix method. The main idea is to transform the difficult problem of solving the polynomial equation system into an equivalent eigenvalue problem, for which there exist good numerical methods. For a more thorough review of the action matrix method and how it has been applied in computer vision we recommend \cite{moller1995multivariate}, \cite{kukelova2008automatic} and \cite{byrod-etal-ijcv-2009}.
+
+Consider the operator $T_\alpha : \field[X]/I \to \field[X]/I$ which multiplies a polynomial with the fix monomial\footnote{For simplicity we take $\alpha$ as a monomial here but the theory holds for a general polynomial as well.} $\alpha \in \field[X]$, \ie
+\begin{equation}
+	T_\alpha\equivc{p(\vec{x})} = \equivc{\alpha(\vec{x})p(\vec{x})},\quad p\in\field[X].
+\end{equation}
+The operator $T_\alpha$ is a linear map and thus if we choose a (linear) basis $\vec{b} = (b_1,b_2,\dots,b_n)^T \in \field[X]^n$ for the quotient space we can express the operator with a matrix $M$, \ie
+\begin{equation}
+	\equivc{\alpha b_i} = \equivc{\sumt_j m_{ij} b_j} \quad \Leftrightarrow \quad \equivc{\alpha \vec{b}} = \equivc{M \vec{b}}.
+\end{equation}
+For each $\vec{x} \in \var$ we must have $M\vec{b}(\vec{x}) = \alpha(\vec{x}) \vec{b}(\vec{x})$. Thus if we evaluate $\alpha$ and $\vec{b}$ at the solutions we get eigenvalues and eigenvectors for the matrix $M$. So if we can find the action matrix $M$ we can recover the solutions by solving an eigenvalue problem, and hence we have reduced the solving of the system of polynomial equations to a linear algebra problem. 
+
+The monomials $r_i = \alpha b_i$ are sometimes called the \textit{reducible} monomials. If a \groebner basis $G$ is known and $\vec{b}$ is chosen as the standard monomials we can recover the action matrix by reducing the reducible monomials with the \groebner basis, \ie $\overline{r_i}^G = \sum_j m_{ij} b_j$. Due to roundoff error it is usually not possible to directly compute a \groebner basis for a polynomial system corresponding to a real problem instance. Instead an alternative approach is taken to recover the action matrix.
+The idea is based on the observation that each
+\begin{equation} \label{eq:amm_ri_mijbj}
+r_i - \sumt_j m_{ij} b_j \in I
+\end{equation}
+and thus there exist some polynomials $h_{ij} \in \field[X]$ such that
+\begin{equation}
+r_i - \sumt_j m_{ij} b_j  = \sumt_j h_{ij} f_j .
+\end{equation}
+To find the action matrix $M$ the original set of equations $\{ f_j(\vec{x}) = 0 \}_{j=0}^m$ is expanded by adding new equations formed by multiplying each $f_j$ by some monomials. If we have multiplied by sufficiently many monomials (\ie all monomials in the unknown $h_{ij}$) we can express each polynomial \eqref{eq:amm_ri_mijbj} linearly in the expanded set of equations. 
+
+To do this in practice (see \eg  \cite{kuang2012numerically} for details) we write the expanded set of equations as $C\vec{X} = 0$,
+%\begin{equation}
+%	C\vec{X} = 0 ,
+%\end{equation}
+where the matrix $C$ is called the \textit{elimination template} and $\vec{X}$ is a vector of all the monomials occurring in the equations. By reordering the monomials we can rewrite this as
+\begin{equation} \label{eq:amm_elim_template}
+	C\vec{X} = \bmat{ C_E & C_R & C_B }\pmat{\vec{x}_E \\ \vec{x}_R \\ \vec{x}_B} = 0 ,
+\end{equation}
+where we have grouped the monomials into excessive monomials $\vec{x}_E$, reducible monomials $\vec{x}_R$ and basis monomials $\vec{x}_B$. The excessive monomials are simply the monomials which are neither reducible nor basis monomials. 
+Now since we know $\vec{x}_R = M\vec{x}_B$ we simply perform Gaussian elimination on \eqref{eq:amm_elim_template} and get the following form on the lower part of \eqref{eq:amm_elim_template}
+\begin{equation}
+\bmat{0 & I & -M}\pmat{\vec{x}_E \\ \vec{x}_R \\ \vec{x}_B} = 0
+\end{equation}	
+from which we can extract the action matrix  $M$.\footnote{Note that in practice some reducible monomials might be available from the basis monomials.}
+Note that the last can be obtained by
+\begin{equation}
+\bmat{0 & I & -M} = A  \bmat{ C_E & C_R & C_B } . 
+\end{equation}	
+Solve for $A$ using
+\begin{equation}
+\bmat{0 & I } = A  \bmat{ C_E & C_R } 
+\end{equation}	
+and then calculate $M$ through 
+\begin{equation}
+M = -A  C_B .
+\end{equation}	
+
+
+
+\section{Example using numerical linear algebra}
+
 Time-of-Arrival measurements gives (after multiplication with the speed of sound or speed of light) distance measurements. 
 Assume that there are a set of $m=2$ anchors $\mathbf{r}_i$, $ i = 1, \dots, m$, with $\mathbf{r}_i \in \fatR^2$.
 Assume that time-of-arrival measurements provide distance measurements
@@ -323,9 +449,7 @@ d_{1} = {\norm{\mathbf{r}_1 - \mathbf{s}}}_2, \\
 d_{2} = {\norm{\mathbf{r}_2 - \mathbf{s}}}_2, 
 \end{cases}
 $$
-\end{example}
 
-\begin{example}[Converting to an eigenvalue problem]
 Here we will show how to convert the planar trilateration problem to an eigenvalue problem. This is not the most efficient way to solve this particular problem. However, it is a useful example to illustrate that a system polynomial equation can be solved in a similar technique as for \verb#roots#, i.e.\
 \begin{itemize}
 \item Mulitply the original equations with a number of monomials.
@@ -472,6 +596,237 @@ $$\mathbf{s} = \begin{pmatrix}
 \end{pmatrix}
 $$
 is one solution to the problem.
+
+
+\section{Finding elimination templates in $\integers_p[X]$}
+\label{sec:eliminationtemplates}
+Now we will present our proposed approach for finding elimination templates for a given problem. Similarly to \cite{kukelova2008automatic} we start by generating instances of the problem where the equations have coefficients in some prime field $\integers_p$. Due to the exact arithmetic available in these fields we can easily compute a \groebner basis $G = \{g_k\}_{k=0}^\ell$ for the ideal.
+% Once we have computed a \groebner basis it becomes trivial to form the action matrix. We simply bring each reducible monomial to its normal form by division, $\overline{r_i}^G = \sum_j a_{ij} b_j$, where $b_j$ are basis monomial obtained from the \groebner basis and $a_{ij} \in \integers_p$ are the entries of the action matrix.
+From the \groebner basis we find a linear basis $\vec{b}$ for the quotient space by forming the normal set. As described in Section~\ref{sec:actionmatrix} we can then find the action matrix by reducing each of the reducible monomials, 
+\begin{equation}
+\overline{r_i}^G = \sumt_j m_{ij} b_j .
+\end{equation}
+Note that this only gives the action matrix for this particular integer instance, which we are not particularly interested in.
+
+However, by keeping track of how the \groebner basis elements are formed we can express each $g_k$ in the generators $f_j$, \ie \footnote{In Macaulay2 this can \eg be accomplished using the \texttt{ChangeMatrix} option for the \texttt{gb} function.}
+\begin{equation} \label{eq:gb_in_generators}
+g_k = \sumt_k c_{kj} f_j,
+\end{equation}
+where the coefficients $c_{kj} \in \integers_p[X]$ are polynomials.
+Since each $r_i-\sum m_{ij} b_j \in I$ we can then find polynomials $h_{ij} \in \integers_p[X]$  such that 
+\begin{equation}
+%	r_i-\sum_j a_{ij} b_j = \sum_k p_{ik} g_k = \sum_k p_{ik} \left(\sum_\ell c_{k\ell} f_\ell \right) = \sum_j q_{ij} f_j
+%	r_i-\sumt_j m_{ij} b_j = \sumt_j h_{ij} f_j
+	r_i-\sumt_j m_{ij} b_j = \sumt_k a_{ik} g_k =  \sumt_k a_{ik} (\sumt_j c_{kj}f_j) =   \sumt_j h_{ij} f_j
+\end{equation}
+by dividing by $\{g_k\}$ and substituting  each $g_k$ with \eqref{eq:gb_in_generators}.
+While the polynomials $h_{ij}$ are specific to this instance, they will typically have the same structure and only the coefficients (\ie numbers) will be different for different problem instances. Thus to form our elimination template we expand our equation set by multiplying each equation $f_j(\vec{x}) = 0$ by the monomials in $h_{ij}$ for each $i = 1,2,\dots,n_R$. 
+
+Typically the elimination templates found using this method will be quite large. In the next section we will show how we can find simpler polynomials $h_{ij}$ that give more compact elimination templates.
+
+
+\section{Reducing the expansion} \label{sec:reduce_exp}
+In the previous section we showed how to obtain polynomials $\vec{h}_i = (h_{i1},\dots,h_{in}) \in \integers_p[X]^n$  such that we could represent the polynomials needed for forming the action matrix, \ie
+\begin{equation}
+	p_i = r_i - \sumt_j m_{ij} b_j = \sumt_j h_{ij}f_j.
+\end{equation}
+These representations of $p_i$ in $\{f_j\}$ are however not unique, since for any $\vec{s} = (s_1,\dots,s_n) \in \integers_p[X]^n$ which satisfies
+\begin{equation}
+	\sumt_j s_jf_j = 0,
+\end{equation}
+we also have
+\begin{equation}
+	p_i = \sumt_j (h_{ij} + s_j)f_j.
+\end{equation}
+Consider the set of all $\vec{s}\in\integers_p[X]^n$ which satisfy this, \ie
+\begin{equation}
+	\mathcal{M} = \{ \vec{s} \in \integers_p[X]^n  ~|~\sumt_j s_j f_j = 0\}.
+\end{equation}
+This set forms a sub-module in $\integers_p[X]^n$ and is called the \textit{first syzygy module} of $(f_1,\dots,f_n)$ \cite{cox2006using}. It captures all polynomial relations between the original equations $\{ f_j(\vec{x}) = 0\}_{i=0}^m$ and it is clear that any representation of $p_i$ in $\{f_j\}$ can be written as $\vec{h}_i + \vec{s}$ for some element $\vec{s} \in \mathcal{M}$. 
+
+Finding the $\vec{s}\in\mathcal{M}$ which yields that smallest template or the best numerics is a difficult problem. Instead we now present a simple heuristic that usually works well in practice.
+ We start by computing a \groebner basis $G_\mathcal{M}$ for the module $\mathcal{M}$. This is done on the prime field problem instance using  Macaulay2.  The \groebner basis depends on the monomial order chosen for $\mathcal{M}$ and in this work we have used the Term-Over-Position-GRevLex which is the default order for modules in Macaulay2. 
+Next to find a simpler representation of each $p_i$ we compute the normal form w.r.t. $G_\mathcal{M}$ for each $\vec{h}_i$, \ie
+\begin{equation}
+	\vec{\tilde{h}}_i = \overline{\vec{h}_i}^{G_\mathcal{M}} .
+\end{equation}
+This can be thought of as removing as much as possible of $\mathcal{M}$ from the representation. The following proposition shows that the new representations $\vec{\tilde{h}}_i$ are minimal in the sense that the maximum degree of the monomials is minimized. Note that there can be multiple representations with minimal degree and this approach only finds one of them.
+
+\begin{prop} If $\mathcal{M}$ is defined as above, $p = \sumt_j h_jf_j$ and $G_\mathcal{M}$ is a \groebner basis for $\mathcal{M}$ with respect to TOP-GRevLex (or any other degree first monomial order), then $\vec{\tilde{h}} = \overline{\vec{h}}^{G_\mathcal{M}}$ satisfies
+\begin{equation}
+	\max_i \deg \tilde{h}_i  \le \max_i \deg \left(\tilde{h}_i + s_i\right) \quad \forall \vec{s} \in \mathcal{M}
+\end{equation}
+\ie the representation $\vec{\tilde{h}}$ of $p$ is of minimal degree.
+\end{prop}
+\begin{proof}
+Assume that there exist some $\vec{s} \in \mathcal{M}$ such that 
+\begin{equation}
+ \max_i \deg \left(\tilde{h}_i + s_i\right)  < \max_i \deg \tilde{h}_i .
+\end{equation}
+Then since the monomial order is degree first we must have $\text{LM}(\vec{\tilde{h}}+ \vec{s}) < \text{LM}(\vec{\tilde{h}} )$ which implies $\text{LM}(\vec{\tilde{h}}) = \text{LM}(\vec{s})$. But then $\vec{\tilde{h}}$ is divisible by an element in $\mathcal{M}$ which is a contradiction.
+\end{proof}
+
+\section{Action matrices in saturated ideals}
+\label{sec:saturation}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[x=1.5cm,y=1.5cm,z=0.7cm,>=stealth]
+% The axes
+\draw[->] (xyz cs:x=-2) -- (xyz cs:x=2) node[above] {$z$};
+\draw[->] (xyz cs:y=-1.1) -- (xyz cs:y=1.2) node[right] {$y$};
+\draw[->] (xyz cs:z=-2) -- (xyz cs:z=2) node[right] {$x$};
+% Points
+\node[fill=blue,circle,inner sep=1.5pt,label={above:$$}] at (0.4082,2*0.4082,0.4082) {};
+\node[fill=blue,circle,inner sep=1.5pt,label={below:$$}] at (-0.4082,-2*0.4082,-0.4082) {};
+% Lines from points to y = 0 plane
+ \draw [ draw=black, dashed, thin, opacity=0.5] (0.4082,0,0.4082)  -- (0.4082,2*0.4082,0.4082);
+ \draw [ draw=black, dashed, thin, opacity=0.5] (-0.4082,0,-0.4082)  -- (-0.4082,-2*0.4082,-0.4082);
+% Circle
+ \begin{scope}[canvas is zx plane at y=0]
+    \draw[very thick,blue] (0,0) circle (1cm);
+\end{scope}
+% Plane
+ \draw [ultra thick, draw=black, fill=gray, opacity=0.15]
+       (-1.5,0,1.5) -- (1.5,0,1.5) -- (1.5,0,-1.5) -- (-1.5,0,-1.5) -- cycle;
+\node at (1.8,0,-1.8) {$y=0$};
+\end{tikzpicture}
+\caption{Solutions to the polynomial system in \eqref{eq:example_sat2}. The solution set consists of two points and a circle contained in the $xz$-plane. Saturating the ideal with $y$ removes any solution where $y=0$.}
+\label{fig:toyexample}
+\end{figure}
+
+
+When the original ideal contains infinitely many solutions, while the saturated ideal is zero-dimensional,  it's not possible to apply the action matrix  method directly. We will now show how to extend the standard action matrix to also handle saturations.
+Let $I = \langle f_1,\dots,f_m \rangle \subset \complex[X]$ be an ideal such that
+\begin{equation}
+J = \sat(I,\fs) = \{ p ~|~ \exists N \ge 0,~\fs^Np \in I \}
+\end{equation}
+ is zero-dimensional and let $\{ \bb_k \}_{k=1}^\ns$ be a linear basis for the quotient ring $\complex[X]/J$.
+
+ The goal is now to lift the properties we need from the saturated ideal $J$ into the original ideal $I$. This will allow us to create an elimination template directly from our original equations which can be used to find the action matrix from the saturated ideal.
+
+\begin{lemma} \label{lem:linindep} For each $N \ge 0$ the set $\{ \fs^N \bb_k \}_{k=1}^\ns$ is linearly independent in the quotient ring $\complex[X]/I$.
+\end{lemma}
+\begin{proof}
+Assume otherwise. Then there exist some $c_i \in \complex$ such that $\sum_i c_i \fs^N \bb_i \in I$. From the definition of the saturation we get 
+\begin{equation}
+\fs^N \left( \sumt_i c_i \bb_i \right) \in I \implies \sumt_i c_i \bb_i \in J,
+\end{equation}
+which is a contradiction.
+\end{proof}
+\noindent
+For $N\ge 0$ define
+\begin{equation}
+S_N =  \bigg[ \vspan ~\{ \fs^N \bb_k \}_{k=1}^d \bigg] \subset \complex[X]/I .
+\end{equation}
+From Lemma~\ref{lem:linindep} we know that $S_N$ forms an $\ns$-dimensional subspace in $\complex[X]/I$.
+
+
+\begin{lemma} \label{lem:ideal} For each $\alpha \in \complex[X]$ there exists $N \ge 0$ such that
+\begin{equation}
+	[ \alpha p ] \in S_N,\quad \forall p \in S_N ,
+\end{equation}
+\ie $S_N$ is stable under multiplication with $\alpha$.
+\end{lemma}
+\begin{proof}
+Let $\alpha \in \complex[X]$ and consider $[\alpha \bb_k]$ in $\complex[X]/J$. Since $\{\bb_k\}_{k=1}^\ns$ spans $\complex[X]/J$ there exist $m_{ij} \in \complex$ such that
+\begin{equation} \label{eq:original_actionmatrix}
+	\left[ \alpha \bb_i \right] = \left[ \sumt_j m_{ij} \bb_j \right] ~\Leftrightarrow~ p_i \defeq \alpha \bb_i - \sum_j m_{ij} \bb_j \in J .
+\end{equation}
+By definition there exist some $N_i \ge 0$ such that $\fs^{N_i}p_i \in I$. Take some $N \ge N_i$ for all $i$, then in $\complex[X]/I$ we have
+\begin{equation} \label{eq:lifted_actionmatrix}
+	\fs^Np_i \in I ~\Leftrightarrow~ \left[ \alpha \fs^N \bb_i \right] =  \left[ \sumt_j m_{ij} \fs^N \bb_j \right] .
+\end{equation}
+Now for any $p \in S_N$ we have as $[p] = \left[\sumt c_i \fs^N \bb_i \right]$. Applying \eqref{eq:lifted_actionmatrix} we get
+\begin{equation}
+	[\alpha p] = \left[\sumt_i c_i \alpha \fs^N \bb_i \right] = \left[\sumt_i \sumt_j c_i m_{ij} \fs^N \bb_j \right] \in S_N ,
+\end{equation}
+which proves the lemma.
+\end{proof}
+
+The following theorem will show a useful relationship between the two multiplication operators
+\begin{equation}
+T^I_\alpha : \complex[X]/I \to \complex[X]/I \quad \text{and} \quad T^J_\alpha : \complex[X]/J \to \complex[X]/J.
+\end{equation}
+
+\begin{thm} For large enough $N\ge 0$, the action matrices corresponding to $\restr{T^I_\alpha}{S_N}$  and $T^J_\alpha$ are the same with respect to the basis $\{\fs^N\bb_k\}_{k=1}^\ns$ and $\{\bb_k\}_{k=1}^\ns$ respectively.
+\end{thm}
+\begin{proof}
+While $\complex[X]/I$ may be infinite dimensional as a vector space, we know from Lemma~\ref{lem:ideal} that $\image \restr{T^I_\alpha}{S_N} \subset S_N$ for large enough $N$.
+The rest of the proof follows immediately by noting that $M_\alpha = (m_{ij})$ from \eqref{eq:original_actionmatrix} and  \eqref{eq:lifted_actionmatrix} is indeed the action matrix for both mappings.
+\end{proof}
+
+
+To gain some intuition why this works consider the action matrix $M_\alpha = (m_{ij})$ corresponding to $\restr{T^I_\alpha}{S_N}$, \ie
+\begin{equation}
+%	\bmat{ & & \\ & M_\alpha & \\ & & } \pmat{ \\ \fs(\vec{x})^N \vec{b}(\vec{x}) \\ ~} = \alpha(\vec{x})  \pmat{ \\ \fs(\vec{x})^N \vec{b}(\vec{x}) \\ ~} .
+	\bmat{ & & \\ & M_\alpha & \\ & & } \pmat{ \\ \fs^N \vec{b} \\ ~} = \alpha  \pmat{ \\ \fs^N \vec{b} \\ ~} .
+\end{equation}
+%\todo{vill man ha $f_s(\vec{x})^N\vec{b}(\vec{x})$ o.s.v. hÃ¤r? Kanske t.o.m. $M_\alpha f_s^N \vec{b} = \alpha f_s^N \vec{b}$}
+%\begin{equation}
+ %M_\alpha \left( \fs(\vec{x})^N \vec{b}(\vec{x}) \right) = \alpha(\vec{x})  \left( \fs(\vec{x})^N \vec{b}(\vec{x}) \right) 
+%M_\alpha  \fs^N \vec{b}  = \alpha   \fs^N \vec{b} 
+%\end{equation}
+Note that while this equation is satisfied for all $\vec{x} \in V(I)$, any solution where $\fs(\vec{x}) = 0$ will correspond to a zero vector and not an eigenvector. Thus by computing the eigenvectors of $M_\alpha$ it is possible to recover only the solutions in the saturated ideal.
+
+We will now show an overview of the steps taken to construct a polynomial solver for a toy example,
+\begin{example} Consider the following system of equations. 
+\begin{equation} \label{eq:example_sat1}
+\begin{cases}
+f_1 = c_0x^2+c_1y^2+c_2z^2+c_3 = 0, \\
+f_2 = c_0x^2+c_4xy+c_2z^2+c_3 = 0,\\
+f_3 = c_0x^2+c_5yz+c_2z^2+c_3 = 0,
+\end{cases}
+\end{equation}
+where  $c_0,c_1,\dots,c_5 \in \complex$ are constants. Note that while three quadratic equations in three variables in general have eight solutions, it is easy to see that this system becomes degenerate for $y = 0$. 
+
+To construct a polynomial solver for this problem we again start by considering an instance of the system where the coefficients are integers, \eg
+\begin{equation}
+\begin{cases} \label{eq:example_sat2}
+f_1 = x^2+y^2+z^2-1 = 0 ,\\
+f_2 = x^2+2xy+z^2-1 = 0 ,\\
+f_3 = x^2+2yz+z^2-1 = 0 .
+\end{cases}
+\end{equation}
+Figure~\ref{fig:toyexample} shows a depiction of the solution set for these equations. 
+For this particular instance we can use algebraic geometry software (\eg \cite{M2}) to compute the saturation w.r.t.~$y$.
+\begin{equation}
+J = \sat(I,y) = \langle y-2z,~x-z,~z^2-\frac1{6}\rangle .
+\end{equation}
+This also gives us a basis for the quotient ring $\complex[X]/J$,
+\begin{equation}
+	\vec{b} = \{1,z\}
+%	b_0 = 1, \quad b_1 = z.
+%	\mathcal{B} = \{z,1\} .
+\end{equation}
+Taking the action polynomial as $x$ we get the action matrix
+\begin{equation}
+	x \bmat{z \\ 1} = \bmat{0~ & 1/6 \\ 1~ & 0} \bmat{z\\1}, \quad (x,y,z) \in V(J) .
+\end{equation}
+Thus we have that the polynomials
+\begin{equation}
+	p_1 = xz - 1/6, \quad p_2 = x-z,
+\end{equation}
+both lie in the saturated ideal $J$. They are however not in $I = \langle f_1,f_2,f_3\rangle$, so it is not possible to construct an elimination template using $f_1,f_2$ and $f_3$ to recover $p_1$ and $p_2$ for a general instance. However when we multiply these by the saturation variable $y$, we lift them into the ideal $I$ and we can express them in terms of the original equations,
+\begin{align} \label{eq:toy1}
+	y p_1 &= -\frac{z}{3} f_1 +(\frac{5z}{12}  - \frac{x}{12})f_2 + (\frac{x}{12}+\frac{y}{6}-\frac{z}{12})f_3, \\
+	y p_2 &= \frac1{2} f_2 - \frac1{2} f_3. \label{eq:toy2}
+\end{align}
+Note that in this example we only needed to multiply by $y$ to lift $p_1$ and $p_2$ into the ideal $I$, but in general higher powers might be required. 
+
+
+Now to solve a general instance of \eqref{eq:example_sat1} we follow the approach described in the previous sections. The elimination template is then created by multiplying each of the polynomials $f_i$ with the monomials occurring in the coefficients in \eqref{eq:toy1}--\eqref{eq:toy2}. So in this case we have
+\begin{equation}
+\{ zf_1,~ f_2,~ xf_2,~ zf_2,~ f_3,~ xf_3,~ yf_3,~zf_3 \}.
+\end{equation}
+Using just linear combinations of these, it is then possible to recover the polynomials,
+\begin{align}
+%	 yp_1 &= yxz - m_{11}yz - m_{12}y, \\ 	yp_2 &= yx - m_{21}yz - m_{22}y 
+	 yp_1 &= y(xz - m_{11}z - m_{12}), \\ 	yp_2 &= y(x - m_{21}z - m_{22}) ,
+\end{align}
+from which we can extract the action matrix 
+\begin{equation}
+M = \bmat{m_{11} & m_{12} \\ m_{21} & m_{22}}.
+\end{equation}
 \end{example}
 
 
