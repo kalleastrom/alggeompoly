@@ -219,4 +219,5 @@ TSWLatexianTemp*
 # expex forward references with \gathertags
 *-tags.tex
 
-matlab/testxx.m2
+matlab/*/test*.m2
+matlab/ex_planar_motion_model/cache
